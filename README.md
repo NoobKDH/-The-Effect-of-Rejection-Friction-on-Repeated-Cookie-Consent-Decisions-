@@ -36,11 +36,3 @@ Description of the data contained in the repository's `data/` directory:
 - `paper/`: PDF file of the paper
 
 ---
-
-├── README.md               # Introduction to Projects and Research (main)
-├── paper/                  # Paper Body and Submission Files
-│   └── main.pdf            # Final Thesis PDF for Submission
-├── data/                   # Data collected by Supabase
-│   ├── trials_rows.csv     # Data extracted from Supabase
-│   └── 참여자.xlsx         # Anonymized participant information (excluding personal information)
-└── web/                    # Source code for the Netlify-deployed survey/experiment website
