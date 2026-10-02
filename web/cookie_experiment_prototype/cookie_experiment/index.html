@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cookie Consent Repetition Experiment</title>
+<style>
+:root{font-family:Arial,"Noto Sans KR",sans-serif;color:#202124;background:#f5f6f8}*{box-sizing:border-box}body{margin:0}.wrap{max-width:980px;margin:auto;padding:36px 20px}.card{background:white;border:1px solid #ddd;border-radius:14px;padding:28px;box-shadow:0 4px 18px rgba(0,0,0,.05)}h1,h2{margin-top:0}button{font:inherit;padding:11px 18px;border:1px solid #555;border-radius:8px;background:#fff;cursor:pointer}button.primary{background:#202124;color:white}.row{display:flex;gap:12px;flex-wrap:wrap}.hidden{display:none!important}.site{min-height:520px;background:#fff}.siteHead{padding:20px 28px;border-bottom:1px solid #eee;font-weight:700;font-size:22px}.content{padding:30px}.skeleton{height:14px;background:#e8e8e8;border-radius:6px;margin:14px 0}.banner{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);width:min(760px,calc(100% - 32px));background:white;border:1px solid #bbb;border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(0,0,0,.18)}.banner .actions{display:flex;justify-content:flex-end;gap:12px;margin-top:18px}.modalBack{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}.modal{width:min(520px,calc(100% - 32px));background:#fff;border-radius:12px;padding:24px}.setting{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #eee}.progress{margin-bottom:12px;color:#666}.likert{display:grid;grid-template-columns:1fr repeat(7,42px);gap:8px;align-items:center;margin:16px 0}.likert input{justify-self:center}.small{font-size:13px;color:#666}.error{color:#b00020}.pill{display:inline-block;padding:4px 8px;background:#eee;border-radius:999px;font-size:12px}.download{margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section id="intro" class="card">
+<h1>쿠키 동의 사용자 실험</h1>
+<p>여러 가상 웹사이트를 순서대로 방문하며 각 사이트의 쿠키 배너에 평소처럼 응답해 주세요.</p>
+<p class="small">연구자는 이 페이지를 로컬/연구 서버에서 운영할 수 있습니다. 본 프로토타입은 실제 쿠키를 저장하거나 광고 추적을 수행하지 않습니다.</p>
+<label>참가자 ID <input id="pid" placeholder="예: P001" /></label>
+<div style="height:14px"></div>
+<label>실험 조건
+<select id="condition"><option value="random">무작위 배정</option><option value="easy">Easy Reject</option><option value="hard">Hard Reject</option></select></label>
+<div style="height:20px"></div><button class="primary" id="start">실험 시작</button><p id="introErr" class="error"></p>
+</section>
+
+<section id="pre" class="card hidden">
+<h2>사전 설문</h2>
+<label>평소 쿠키 배너에서 가장 가까운 행동은?<br><select id="habit"><option value="">선택</option><option>모두 허용</option><option>모두 거부</option><option>필요한 것만 허용</option><option>상황에 따라 다름</option><option>잘 모르겠다</option></select></label><br><br>
+<label>쿠키 배너를 자주 접한다고 느낀다 (1 전혀 아니다 – 7 매우 그렇다)<br><input id="frequency" type="range" min="1" max="7" value="4"><span id="freqVal">4</span></label><br><br>
+<label>온라인 개인정보 보호에 관심이 많다 (1–7)<br><input id="privacy" type="range" min="1" max="7" value="4"><span id="privVal">4</span></label><br><br>
+<button class="primary" id="preNext">다음</button><p id="preErr" class="error"></p>
+</section>
+
+<section id="experiment" class="hidden">
+<div class="progress" id="progress"></div>
+<div class="site card"><div class="siteHead" id="siteName"></div><div class="content"><h2 id="headline"></h2><div class="skeleton" style="width:95%"></div><div class="skeleton" style="width:82%"></div><div class="skeleton" style="width:90%"></div><div class="skeleton" style="width:60%"></div></div></div>
+<div id="banner" class="banner"><strong>이 웹사이트는 쿠키를 사용합니다.</strong><p>서비스 제공 및 분석을 위해 필수 쿠키와 선택적 쿠키를 사용할 수 있습니다.</p><div class="actions" id="actions"></div></div>
+<div id="modalBack" class="modalBack hidden"><div class="modal"><h2>쿠키 설정</h2><div class="setting"><span>필수 쿠키</span><span class="pill">항상 사용</span></div><div class="setting"><span>분석 쿠키</span><span>사용 안 함</span></div><div class="setting"><span>광고 쿠키</span><span>사용 안 함</span></div><div class="actions" style="margin-top:20px;text-align:right"><button class="primary" id="saveReject">선택 저장</button></div></div></div>
+</section>
+
+<section id="post" class="card hidden">
+<h2>사후 설문</h2><p>1 = 전혀 그렇지 않다, 7 = 매우 그렇다</p><div id="postItems"></div><button class="primary" id="finish">제출</button><p id="postErr" class="error"></p>
+</section>
+
+<section id="done" class="card hidden"><h2>실험이 완료되었습니다.</h2><p>참여해 주셔서 감사합니다.</p><p id="assigned"></p><button id="download" class="download">연구 데이터 CSV 다운로드</button><button id="downloadJson" class="download">전체 JSON 다운로드</button></section>
+</div>
+<script>
+const sites=[['Daily View','오늘의 주요 소식'],['Urban Post','도시 생활과 새로운 이야기'],['Travel Note','이번 주 여행 이야기'],['Tech Daily','새로운 기술과 디지털 생활'],['Culture Page','문화와 일상의 기록'],['Morning Journal','오늘 아침 읽을거리'],['Open Magazine','새로운 관점과 이야기'],['City Review','도시에서 발견한 장면들'],['Weekend Story','주말을 위한 읽을거리'],['Insight Post','오늘의 인사이트']];
+const postQuestions=[['fatigue1','반복되는 쿠키 동의 요청이 피곤하게 느껴졌다.'],['fatigue2','쿠키 동의 요청이 반복될수록 설정 내용을 확인하는 것이 귀찮아졌다.'],['fatigue3','실험 후반으로 갈수록 쿠키 배너를 가능한 빨리 처리하고 싶었다.'],['fatigue4','반복되는 쿠키 동의 요청에 계속 주의를 기울이기 어려웠다.'],['fatigue5','쿠키 설정을 계속 선택하는 과정이 부담스럽게 느껴졌다.'],['effort','쿠키를 거부하는 과정이 번거롭게 느껴졌다.']];
+let state={participant:'',condition:'',pre:{},trials:[],post:{},trial:0,bannerShownAt:0,clicks:0,manageClicked:false};
+const $=id=>document.getElementById(id); const show=id=>{['intro','pre','experiment','post','done'].forEach(x=>$(x).classList.add('hidden'));$(id).classList.remove('hidden')};
+$('frequency').oninput=e=>$('freqVal').textContent=e.target.value;$('privacy').oninput=e=>$('privVal').textContent=e.target.value;
+$('start').onclick=()=>{if(!$('pid').value.trim()){ $('introErr').textContent='참가자 ID를 입력하세요.';return;}state.participant=$('pid').value.trim();let c=$('condition').value;state.condition=c==='random'?(Math.random()<.5?'easy':'hard'):c;show('pre')};
+$('preNext').onclick=()=>{if(!$('habit').value){$('preErr').textContent='평소 쿠키 행동을 선택하세요.';return;}state.pre={habit:$('habit').value,frequency:+$('frequency').value,privacyConcern:+$('privacy').value};show('experiment');renderTrial()};
+function renderTrial(){let [name,head]=sites[state.trial];$('progress').textContent=`사이트 ${state.trial+1} / ${sites.length}`;$('siteName').textContent=name;$('headline').textContent=head;$('actions').innerHTML='';state.clicks=0;state.manageClicked=false;
+ const accept=document.createElement('button');accept.textContent='모두 허용';accept.className='primary';accept.onclick=()=>{state.clicks++;record('Accept')};
+ if(state.condition==='easy'){const reject=document.createElement('button');reject.textContent='모두 거부';reject.onclick=()=>{state.clicks++;record('Reject')};$('actions').append(reject,accept)}else{const manage=document.createElement('button');manage.textContent='쿠키 설정';manage.onclick=()=>{state.clicks++;state.manageClicked=true;$('modalBack').classList.remove('hidden')};$('actions').append(manage,accept)}
+ requestAnimationFrame(()=>{state.bannerShownAt=performance.now()});}
+$('saveReject').onclick=()=>{state.clicks++;$('modalBack').classList.add('hidden');record('Reject')};
+function record(choice){let t=performance.now();state.trials.push({participant:state.participant,condition:state.condition,trial:state.trial+1,site:sites[state.trial][0],choice,reject:+(choice==='Reject'),decisionTimeSec:+((t-state.bannerShownAt)/1000).toFixed(3),manageClicked:state.manageClicked?1:0,clickCount:state.clicks});state.trial++;if(state.trial>=sites.length){buildPost();show('post')}else renderTrial()}
+function buildPost(){$('postItems').innerHTML='';postQuestions.forEach(([key,q])=>{let d=document.createElement('div');d.className='likert';d.innerHTML=`<div>${q}</div>`+[1,2,3,4,5,6,7].map(n=>`<label>${n}<br><input type="radio" name="${key}" value="${n}"></label>`).join('');$('postItems').appendChild(d)})}
+$('finish').onclick=()=>{for(const [key] of postQuestions){let x=document.querySelector(`input[name="${key}"]:checked`);if(!x){$('postErr').textContent='모든 문항에 응답해 주세요.';return;}state.post[key]=+x.value}state.post.fatigueMean=+(Object.entries(state.post).filter(([k])=>k.startsWith('fatigue')).reduce((a,[,v])=>a+v,0)/5).toFixed(2);$('assigned').textContent=`조건: ${state.condition.toUpperCase()} / 참가자: ${state.participant}`;show('done')};
+function csv(){let h=['participant','condition','trial','site','choice','reject','decisionTimeSec','manageClicked','clickCount','habit','frequency','privacyConcern','fatigueMean','perceivedEffort'];let rows=state.trials.map(r=>[r.participant,r.condition,r.trial,r.site,r.choice,r.reject,r.decisionTimeSec,r.manageClicked,r.clickCount,state.pre.habit,state.pre.frequency,state.pre.privacyConcern,state.post.fatigueMean,state.post.effort]);return [h,...rows].map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n')}
+function dl(name,text,type){let b=new Blob([text],{type});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href)}
+$('download').onclick=()=>dl(`${state.participant}_${state.condition}.csv`,csv(),'text/csv;charset=utf-8');$('downloadJson').onclick=()=>dl(`${state.participant}_${state.condition}.json`,JSON.stringify(state,null,2),'application/json');
+</script>
+</body></html>
